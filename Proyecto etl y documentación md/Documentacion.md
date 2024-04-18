@@ -465,201 +465,193 @@ Al ejecutar podremos observar que ya se insertaron datos en nuestra tabla DimTie
 
 Agregamos otro contenedor de secuencias para tener orden en nuestro proyecto al querer transferir datos entre la fuente y los destinos y no conectamos al anterior contenedor de secuencias, despues dentro agregamos un Data Flow Task o Tarea de Flujo de datos el cual nos va a permitir definir y ejecutar procesos de extracción, transformación y carga (ETL) de datos. 
 
-![alt text](image-88.png)
+![alt text](img68.jpeg)
 
 Cuando agregamos un Data Flow Task al flujo de control del paquete SSIS en el que estamos trabajando, lo que hacemos es que estamos creando una sección donde podremos definir cómo los datos se mueven desde una fuente (Que en este caso, es la base de datos "NORTHWND") hacia un destino (la tabla factVentas en la base de datos "DATAMARTVENTAS").
 
-Una vez creado esto, damos doble clic a nuestro Data Flow Task que hara la tarea de llenar la tabla factVentas.
 
 Dentro agregamos 2 OLE DB Source ó Origenes de OLE DB para configurar dentro nuestras conexiones en este caso con la base de datos de NORTHWND por lo que en el administrador de conexiones tenemos que tener la opcion de Microsoft OLE DB Driver for SQL Server, despues el nombre del servidor que puedes verlo en sql server management studio al dar clic derecho e ir a properties. Y finalmente en Initial catalog eligiremos la base de datos que vamos a utilizar, en este caso elegimos NORTHWND. Esta conexión se utiliza para acceder a la tabla "Order Details" y recuperar los datos necesarios para nuestra carga de datos.
 
 Primer OLE DB Source:
-![alt text](image-89.png)
+![alt text](img69.jpeg)
 
 Mappeo de los campos en el primer OLE DB Source:
-![alt text](image-90.png)
+![alt text](img70.jpeg)
 
 Este primer Origen OLE DB actuará como la primer fuente de datos en nuestro Data Flow Task. Se conecta a una fuente de datos OLE DB, que en este caso es la base de datos "NORTHWND". Y el OLE DB Source ejecutará la consulta SQL que hemos especificado y devolverá los resultados al flujo de datos para que puedan ser procesados y transferidos al destino. Como se observa en la imagen, elegimos el modo "Comando SQL" para especificar una consulta SQL personalizada que va a extraer los datos de la tabla "Order Details" de la base de datos NORTHWND. 
 
 La consulta SQL que colocamos selecciona varias columnas de la tabla "Order Details", incluyendo UnitPrice, Quantity, Importe que es un campo calculado de UnitPrice multiplicado por OrderID, y ProductID. Una vez que se ejecuta esta consulta, los resultados se mapearán a las columnas correspondientes en la tabla de destino (factVentas). Hay que asegurarnos de que las columnas devueltas por la consulta se correspondan adecuadamente con las columnas en la tabla de destino para evitar errores de mapeo, esto lo revisamos en la opcion donde dice Columnas.
 
 Segundo OLE DB Source:
-![alt text](image-91.png)
+![alt text](img72.jpeg)
 
 Mappeo de los campos en el segundo OLE DB Source:
-![alt text](image-92.png)
+![alt text](img73.jpeg)
 
 Luego Añadimos 2 elementos sort para ordenar los datos que traemos del origen tanto de la tabla Order Details de la base de datos NORTHWND como de la tabla factVentas. Vamos a ordenar ambos por el campo ProductID.
 
 Imagen de estructura:
-![alt text](image-93.png)
+![alt text](img74.jpeg)
 
 Primer Sort:
-![alt text](image-94.png)
+![alt text](img75.jpeg)
 
 Segundo Sort:
-![alt text](image-95.png)
+![alt text](img76.jpeg)
 
 Una vez que ambos estan ordenados y que ya conversimos los datos con el Data conversion, añadimos un merge join para hacer la mezcla de los datos, y poder hacer un inner join
 en la imagen se muestra como hemos configurado el componente Merge Join en nuestro flujo de datos, utilizando un Inner Join para combinar los registros de nuestras dos fuentes de datos basadas en una clave común, que en este caso es ProductID, como todo se hace por TimeFecha para ambas fuentes, lo que hara SSIS es buscar coincidencias basadas en esta columna, seleccionamos los campos OrderID, UnitPrice, Quantity, y el importe todos estos datos desde el flujo izquierdo y los campos SKProductoID, y ProductID del flujo derecho.
 
 Merge join de tipo Inner Join:
-![alt text](image-97.png)
+![alt text](img77.jpeg)
 
 Configuracion del Merge join:
-![alt text](image-96.png)
+![alt text](img78.jpeg)
 
 Luego añadimos un nuevo componente Origen de OLE DB que va a tener conexion con la tabla Products de NORTHWND
 
 Origen OLE DB que acabamos de añadir
-![alt text](image-98.png)
+![alt text](img79.jpeg)
 
 Mapping:
-![alt text](image-99.png)
+![alt text](img80.jpeg)
 
 Luego agregamos 2 sort para ordenar tanto el Inner Join que hicimos como los datos que vienen de la tabla Products y ordenaremos en ambos por el campo ProductID.
 
 Primer Sort:
-![alt text](image-100.png)
+![alt text](img81.jpeg)
 
 Segundo Sort para ordenar datos de Products:
-![alt text](image-101.png)
+![alt text](img82.jpeg)
 
 Luego ya que tenemos esos datos ordenados los vamos a mezclar con un Merge Join de tipo Inner Join por medio del ProductID, uniendo los campos OrderID, UnitPrice, Quantity, SkProductoID,SupplierID, Importe.
 
 Estructura:
-![alt text](image-102.png)
+![alt text](img83.jpeg)
 
 Configuracion del MergeJoin:
-![alt text](image-103.png)
+![alt text](img84.jpeg)
 
 Luego añadimos un nuevo componente Origen de OLE DB que va a tener conexion con la tabla DimProveedor de DATAMARTVENTAS
 
 Origen OLE DB que acabamos de añadir de DimProveedor
-![alt text](image-104.png)
+![alt text](img85.jpeg)
 
 Mapping:
-![alt text](image-105.png)
+![alt text](img86.jpeg)
 
 Luego agregamos 2 sort para ordenar tanto el Inner Join que hicimos como los datos que vienen de la tabla DimProveedor y ordenaremos en ambos por el campo SupplierID.
 
 Primer Sort:
-![alt text](image-106.png)
+![alt text](img87.jpeg)
 
 Segundo Sort para ordenar datos de DimProveedor:
-![alt text](image-107.png)
+![alt text](img88.jpeg)
 
 Luego ya que tenemos esos datos ordenados los vamos a mezclar con un Merge Join de tipo Inner Join por medio del SupplierID, uniendo los campos OrderID, UnitPrice, Quantity, SkProductoID, y el Importe del lado del flujo izquierdo y SkSupplierID del flujo derecho.
 
 Estructura:
-![alt text](image-108.png)
+![alt text](img89.jpeg)
 
 Configuracion del MergeJoin:
-![alt text](image-109.png)
+![alt text](img90.jpeg)
 
 De la misma forma repetiremos el proceso mas veces, añadimos origen de OLE DB, ordenamos y hacemos Merge Join y asi consecutivamente como lo hemos hecho, el siguiente tiene conexion con Orders y con la consulta SQL seleccionamos OrderID, EmployeeID, CustomerID, y OrderDate que es un campo calculado en donde concatenamos la fecha y la hora dentro de ese campo.
 
 Origen OLE DB que acabamos de añadir de Orders
-![alt text](image-110.png)
+![alt text](img91.jpeg)
 
 Mapping:
-![alt text](image-111.png)
+![alt text](img92.jpeg)
 
 Luego Añadimos los componentes Sort y ordenamos ambos por OrderID.
 
 Primer sort:
-![alt text](image-112.png)
+![alt text](img93.jpeg)
 
 Segundo sort:
-![alt text](image-113.png)
+![alt text](img94.jpeg)
 
 Luego ya que tenemos esos datos ordenados los vamos a mezclar con un Merge Join de tipo Inner Join por medio del OrderID, uniendo los campos UnitPrice, Quantity, SkProductoID, SkSupplierID y el Importe del lado del flujo izquierdo y los campos CustomerID, EmployeeID, y OrderDate del flujo derecho.
 
 Estructura:
-![alt text](image-115.png)
+![alt text](img95.jpeg)
 
 Configuracion del MergeJoin:
-![alt text](image-114.png)
+![alt text](img96.jpeg)
 
 Hacemos lo mismo añadimos un origen OLE DB con la tabla DimEmpleado de DATAMARTVENTAS y ordenamos ambos usando Sort por medio del campo EmployeeID y para finalizar el Inner Join por medio de SkEmployeeID.
 
 Origen de OLE DB:
-![alt text](image-116.png)
+![alt text](img97.jpeg)
 
 Mapping:
-![alt text](image-117.png)
+![alt text](img98.jpeg)
 
 Primer sort:
-![alt text](image-118.png)
+![alt text](img99.jpeg)
 
 Segundo sort:
-![alt text](image-119.png)
+![alt text](img100.jpeg)
 
-Estructura:
-![alt text](image-120.png)
+
 
 Configuracion del MergeJoin:
-![alt text](image-121.png)
+![alt text](img101.jpeg)
 
 Hacemos lo mismo añadimos un origen OLE DB con la tabla DimCliente de DATAMARTVENTAS y ordenamos ambos usando Sort por medio del campo CustomerID y para finalizar el Inner Join por medio de SkCustomerID.
 
 Origen de OLE DB:
-![alt text](image-122.png)
+![alt text](img102.jpeg)
 
 Mapping:
-![alt text](image-123.png)
+![alt text](img103.jpeg)
 
 Primer sort:
-![alt text](image-124.png)
+![alt text](104.jpeg)
 
 Segundo sort:
-![alt text](image-125.png)
+![alt text](105.jpeg)
 
-Estructura:
-![alt text](image-126.png)
+
 
 Configuracion del MergeJoin:
-![alt text](image-127.png)
+![alt text](106.jpeg)
 
 Hacemos lo mismo añadimos un origen OLE DB con la tabla DimTiempo por medio de codigo SQL de DATAMARTVENTAS seleccionando solo los campos SkTimeID, y TimeFecha. Luego ordenamos ambos usando Sort por medio del campo OrderDate y TimeFecha y para finalizar el Inner Join por medio de  OrderDate y TimeFecha.
 
 Origen de OLE DB:
-![alt text](image-128.png)
+![alt text](107.jpeg)
 
 Mapping:
-![alt text](image-129.png)
+![alt text](108.jpeg)
 
 Primer sort:
-![alt text](image-130.png)
+![alt text](109.jpeg)
 
 Segundo sort:
-![alt text](image-131.png)
+![alt text](110.jpeg)
 
-Estructura:
-![alt text](image-132.png)
 
 Configuracion del MergeJoin:
-![alt text](image-133.png)
+![alt text](111.jpeg)
 
 Por ultimo hacemos lo mismo añadimos un origen OLE DB con la tabla factVentas de la base de datos DATAMARTVENTAS. Luego ordenamos ambos usando Sort por medio del campo SkProductoID y sk_producto, y para finalizar el Inner Join por medio de  SkProductoID y SkTimeID.
 
 Origen de OLE DB:
-![alt text](image-134.png)
+![alt text](112.jpeg)
 
 Mapping:
-![alt text](image-135.png)
+![alt text](113.jpeg)
 
 Primer sort:
-![alt text](image-136.png)
+![alt text](114.jpeg)
 
 Segundo sort:
-![alt text](image-137.png)
-
-Estructura:
-![alt text](image-138.png)
+![alt text](115.jpeg)
 
 Configuracion del MergeJoin:
-![alt text](image-139.png)
+![alt text](116.jpeg)
 
 Luego para terminar añadimos un conditional split y lo conectamos al Merge Join que acabamos de hacer, y dentro colocamos el filtro para saber si hay nuevos registros el cual es:
 
@@ -669,10 +661,13 @@ ISNULL(sk_producto) || ISNULL(sk_cliente) || ISNULL(sk_proveedor) || ISNULL(sk_t
 
 Con ella si el campo sk_producto ó sk_cliente ó sk_proveedor ó sk_timeId son nulos entonces significa que el registro es nuevo.
 
-![alt text](image-140.png)
+![alt text](129.jpeg)
 
 Por ultimo añadimos el destino OLE DB para insertar en la tabla factVentas:
-![alt text](image-141.png)
+![alt text](117.jpeg)
 
 mapping:
-![alt text](image-142.png)
+![alt text](118.jpeg)
+
+Despues haremos un select from a facventas para verificar que se insertaron los datos:
+![alt text](img130.jpeg)
